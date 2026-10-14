@@ -1,0 +1,250 @@
+/* SPDX-License-Identifier: MPL-2.0 */
+/* Copyright (c) 2026 Nyasers */
+
+/* 四叶风车 —— 界面样式。深色舞台，HUD 浮在画布之上。 */
+
+:root {
+  --bg0: #04060d;
+  --bg1: #0e1730;
+  --ink: #e9efff;
+  --dim: #8fa2cc;
+  --line: rgba(150, 180, 255, 0.16);
+  --glass: rgba(14, 22, 44, 0.72);
+  --accent: #6fd3ff;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background: radial-gradient(120% 90% at 50% 28%, var(--bg1) 0%, var(--bg0) 72%);
+  color: var(--ink);
+  overflow: hidden;
+  font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+#stage {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+}
+
+canvas {
+  display: block;
+  touch-action: none;
+  cursor: grab;
+  border-radius: 0;
+}
+
+canvas.grabbing {
+  cursor: grabbing;
+}
+
+/* HUD 默认不接管指针，交互控件单独放行 */
+.hud {
+  position: fixed;
+  z-index: 2;
+  pointer-events: none;
+  user-select: none;
+}
+
+#title {
+  left: 26px;
+  top: 22px;
+}
+
+#title h1 {
+  margin: 0;
+  font-size: 19px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+}
+
+#title p {
+  margin: 6px 0 0;
+  font-size: 12px;
+  color: var(--dim);
+  letter-spacing: 0.04em;
+}
+
+#title a {
+  color: var(--dim);
+  text-decoration: none;
+  border-bottom: 1px solid var(--line);
+  transition: 0.16s;
+  pointer-events: auto;
+}
+
+#title a:hover {
+  color: var(--ink);
+  border-bottom-color: var(--accent);
+}
+
+#readout {
+  right: 26px;
+  top: 22px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+#readout .row {
+  font-size: 12px;
+  color: var(--dim);
+  letter-spacing: 0.06em;
+  margin-bottom: 6px;
+}
+
+#readout .row b {
+  color: var(--accent);
+  font-weight: 600;
+  font-size: 14px;
+  margin-left: 8px;
+}
+
+#panel {
+  left: 26px;
+  bottom: 24px;
+  pointer-events: auto;
+  background: var(--glass);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  backdrop-filter: blur(10px);
+  padding: 14px 16px 12px;
+  width: 290px;
+}
+
+#panel .grp {
+  margin-bottom: 11px;
+}
+
+#panel label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11.5px;
+  color: var(--dim);
+  letter-spacing: 0.06em;
+  margin-bottom: 5px;
+}
+
+#panel label b {
+  color: var(--ink);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+input[type='range'] {
+  width: 100%;
+  height: 3px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: linear-gradient(90deg, var(--accent), rgba(150, 180, 255, 0.22));
+  border-radius: 3px;
+  outline: none;
+}
+
+input[type='range']::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(111, 211, 255, 0.25);
+  cursor: pointer;
+}
+
+input[type='range']::-moz-range-thumb {
+  width: 13px;
+  height: 13px;
+  border: 0;
+  border-radius: 50%;
+  background: #fff;
+  cursor: pointer;
+}
+
+.btns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.btns button {
+  font: inherit;
+  font-size: 11.5px;
+  color: var(--dim);
+  letter-spacing: 0.04em;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 5px 10px;
+  cursor: pointer;
+  transition: 0.16s;
+}
+
+.btns button:hover {
+  color: var(--ink);
+  border-color: rgba(111, 211, 255, 0.45);
+}
+
+.btns button.on {
+  color: #04121c;
+  background: var(--accent);
+  border-color: var(--accent);
+  font-weight: 600;
+}
+
+#hint {
+  position: fixed;
+  left: 50%;
+  bottom: 26px;
+  transform: translateX(-50%);
+  font-size: 11.5px;
+  color: rgba(143, 162, 204, 0.75);
+  letter-spacing: 0.08em;
+  pointer-events: none;
+}
+
+/* 离屏截图用：?ui=0 时只留画布 */
+body.no-ui #title,
+body.no-ui #readout,
+body.no-ui #panel,
+body.no-ui #hint {
+  display: none;
+}
+
+.fatal {
+  position: fixed;
+  inset: 0;
+  z-index: 9;
+  display: grid;
+  place-content: center;
+  gap: 8px;
+  padding: 32px;
+  text-align: center;
+  background: var(--bg0);
+}
+
+/* hidden 只是 UA 样式里的 display:none，会被上面的 display:grid 盖掉。
+   必须显式关掉，否则这层遮罩永远盖在画布上。 */
+.fatal[hidden] {
+  display: none;
+}
+
+.fatal h2 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.fatal p {
+  margin: 0;
+  color: var(--dim);
+  font-size: 13px;
+}
