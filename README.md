@@ -6,26 +6,29 @@
 
 | 子路径 | 项目 | 它讲的事 |
 |---|---|---|
-| [/aaclock/](https://nyasers.github.io/toys/aaclock/) | [AAClock](aaclock/) | 反走样：同一套几何、两条采样路径、一个能看设备像素的放大镜 |
-| [/four-leaf-pinwheel/](https://nyasers.github.io/toys/four-leaf-pinwheel/) | [四叶风车](four-leaf-pinwheel/) | 图形学流水线：参数化 → 变换 → 时间 → 投影消隐 |
+| [/anti-aliasing-clock/](https://nyasers.github.io/toys/anti-aliasing-clock/) | [AAClock](packages/anti-aliasing-clock/) | 反走样：同一套几何、两条采样路径、一个能看设备像素的放大镜 |
+| [/four-leaf-pinwheel/](https://nyasers.github.io/toys/four-leaf-pinwheel/) | [四叶风车](packages/four-leaf-pinwheel/) | 图形学流水线：参数化 → 变换 → 时间 → 投影消隐 |
 
-根上的 [index.html](index.html) 是目录页，只负责链到这两个子路径。
+根上的 [index.html](index.html) 是目录页，只负责链到这些子路径。
 
 ## 结构
 
 ```
-index.html                目录页（部署在站点根）
-scripts/assemble-site.mjs 把各子包的 dist 搬到 _site/<path>
-aaclock/                  反走样时钟
-four-leaf-pinwheel/       四叶风车
+index.html                  目录页（部署在站点根）
+scripts/assemble-site.mjs   把各子包的 dist 搬到 _site/<path>
+packages/
+  anti-aliasing-clock/      反走样时钟
+  four-leaf-pinwheel/       四叶风车
 ```
 
-每个子目录仍是一个完整的包：自己的 `index.html`、`src/`、`vite.config.ts`、`package.json`。它们互不引用，可以单独构建、单独把 `dist` 拿出来用。
+每个 `packages/<name>/` 仍是一个完整的包：自己的 `index.html`、`src/`、`vite.config.ts`、`package.json`。它们互不引用，可以单独构建、单独把 `dist` 拿出来用。
+
+源码收在 `packages/` 下，发布路径去掉这一层：包目录名就是站点子路径。
 
 ## 本地
 
 ```bash
-git submodule update --init --depth 1   # aaclock 的主题资源取自 submodule
+git submodule update --init --depth 1   # anti-aliasing-clock 的主题资源取自 submodule
 pnpm install
 pnpm dev                                # 两个玩具并行起开发服务器（5180 / 5181）
 ```
@@ -43,7 +46,7 @@ pnpm site                     # 构建单文件压缩版 + 组装 _site（线上
 只做其中一个：
 
 ```bash
-pnpm --filter aaclock build:standalone
+pnpm --filter anti-aliasing-clock build:standalone
 pnpm --filter four-leaf-pinwheel dev
 ```
 
@@ -55,7 +58,7 @@ pnpm --filter four-leaf-pinwheel dev
 2. `pnpm site`：递归构建每个子包的单文件压缩产物，再组装成 `_site/`
 3. 上传 `_site` 到 GitHub Pages
 
-所以加一个玩具的步骤是：新建子目录、登记进 `pnpm-workspace.yaml`、把它的 `dist` 加进 `scripts/assemble-site.mjs` 的清单、在根 `index.html` 里加一条。子路径就是它的目录名，`vite` 的 `base` 保持相对路径 `./` 即可，不需要为部署路径改任何配置。
+加一个玩具：在 `packages/` 下新建包、登记进 `pnpm-workspace.yaml` 的 `packages/*`、把它的目录名加进 [`scripts/assemble-site.mjs`](scripts/assemble-site.mjs) 的清单、在根 `index.html` 里加一条。子路径由清单里的 `path` 决定，`vite` 的 `base` 保持相对路径 `./` 即可，不需要为部署路径改任何配置。
 
 ## 许可
 

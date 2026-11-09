@@ -1,5 +1,5 @@
 {
-  "name": "aaclock",
+  "name": "anti-aliasing-clock",
   "version": "0.1.0",
   "private": true,
   "description": "反走样时钟：同一个钟面，三种采样策略，逐像素看得见的差别",

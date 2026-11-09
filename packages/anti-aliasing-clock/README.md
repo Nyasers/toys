@@ -4,7 +4,7 @@
 
 单页 WebGL2，无框架、无运行时依赖，Vite + TypeScript。
 
-> 本项目位于 [toys](../README.md) 仓库的 `aaclock/` 子目录，线上地址是 <https://nyasers.github.io/toys/aaclock/>。安装与构建走仓库根的 pnpm workspace，下面这些命令在仓库根执行。
+> 本项目位于 [toys](../../README.md) 仓库的 `packages/anti-aliasing-clock/` 子目录，线上地址是 <https://nyasers.github.io/toys/anti-aliasing-clock/>。安装与构建走仓库根的 pnpm workspace，下面这些命令在仓库根执行。
 
 ## 用法
 
@@ -352,6 +352,6 @@ src/
 
 ## 13. 许可
 
-本项目采用 **Mozilla Public License 2.0**（MPL-2.0），全仓库共用一份，全文见 [LICENSE](../LICENSE)。
+本项目采用 **Mozilla Public License 2.0**（MPL-2.0），全仓库共用一份，全文见 [LICENSE](../../LICENSE)。
 
 This Source Code Form is "Incompatible With Secondary Licenses", as defined by the Mozilla Public License, v. 2.0.
