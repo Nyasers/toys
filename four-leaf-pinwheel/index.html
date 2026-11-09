@@ -1,0 +1,76 @@
+<!doctype html>
+<!--
+  This Source Code Form is subject to the terms of the Mozilla Public
+  License, v. 2.0. If a copy of the MPL was not distributed with this
+  file, You can obtain one at https://mozilla.org/MPL/2.0/.
+-->
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="dark" />
+    <meta
+      name="description"
+      content="四叶风车：极坐标参数化写出叶片，变换栈复制成四片，时间驱动旋转，挤出与透视投影让它立起来。"
+    />
+    <title>四叶风车 · Four-Leaf Pinwheel</title>
+  </head>
+  <body>
+    <div id="stage"><canvas id="cv"></canvas></div>
+
+    <div class="hud" id="title">
+      <h1>四 叶 风 车</h1>
+      <p>极坐标参数化 · 变换栈 · 时间驱动 · 挤出与透视投影</p>
+      <p>
+        <a href="https://github.com/Nyasers/four-leaf-pinwheel" target="_blank" rel="noopener">
+          github.com/Nyasers/four-leaf-pinwheel
+        </a>
+      </p>
+    </div>
+
+    <div class="hud" id="readout">
+      <div class="row">旋转角 <b id="ro-a">0.0°</b></div>
+      <div class="row">角速度 <b id="ro-w">108.0 °/s</b></div>
+      <div class="row">叶宽 <b id="ro-s">0.26</b></div>
+    </div>
+
+    <div class="hud" id="panel">
+      <div class="grp">
+        <label>转速 <b id="v-rev">0.30 圈/秒</b></label>
+        <input id="s-rev" type="range" min="0" max="2" step="0.01" value="0.3" aria-label="转速" />
+      </div>
+      <div class="grp">
+        <label>叶片旋扭 <b id="v-bend">18°</b></label>
+        <input id="s-bend" type="range" min="-40" max="40" step="1" value="18" aria-label="叶片旋扭" />
+      </div>
+      <div class="grp">
+        <label>叶片宽度 <b id="v-width">0.26</b></label>
+        <input id="s-width" type="range" min="0.08" max="0.46" step="0.01" value="0.26" aria-label="叶片宽度" />
+      </div>
+      <div class="grp" id="grp-3d">
+        <label>视角俯仰 <b id="v-tilt">58°</b></label>
+        <input id="s-tilt" type="range" min="0" max="78" step="1" value="58" aria-label="视角俯仰" />
+      </div>
+      <div class="grp btns">
+        <button type="button" id="b-shape">叶形：花瓣</button>
+        <button type="button" id="b-mode">模式：2D</button>
+        <button type="button" id="b-pause">暂停</button>
+      </div>
+      <div class="grp btns" style="margin-bottom: 0">
+        <button type="button" id="b-grid" class="on">极坐标网格</button>
+        <button type="button" id="b-env" class="on">包络星形</button>
+        <button type="button" id="b-trail">拖影</button>
+        <button type="button" id="b-demo">单叶分解</button>
+      </div>
+    </div>
+
+    <div id="hint">拖动风车可手动旋转，松手后带着惯性继续转</div>
+
+    <div class="fatal" id="fatal" hidden>
+      <h2>无法初始化</h2>
+      <p id="fatalText"></p>
+    </div>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
