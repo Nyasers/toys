@@ -11,6 +11,7 @@
 import { DEFAULT_PARAMS, MAX_DRAG_SPEED, Motion, type Params } from './model';
 import { Scene } from './scene';
 import { wrapPi } from './geometry';
+import { refreshPalette } from './palette';
 import {
   applyUrlOverrides,
   assertContract,
@@ -20,15 +21,42 @@ import {
   wire,
   type UiState,
 } from './ui';
-import './styles.css';
 
 const TAU = Math.PI * 2;
 
 /** 拖拽换算成角速度的系数：把「每帧的弧度增量」放大成「每秒」。 */
 const DRAG_SPEED_SCALE = 60;
 
-function main(): void {
+/** 挂载后交给外部的句柄。 */
+export interface PinwheelHandle {
+  /** 主题变了：重读色板并立刻重绘一帧。 */
+  refresh: () => void;
+  /** 停掉主循环。 */
+  dispose: () => void;
+}
+
+/** 挂载风车。DOM 由 React 渲染（id 就是契约），这里接上 Scene 与主循环。 */
+export function mountPinwheel(): PinwheelHandle {
+  try {
+    return main();
+  } catch (err) {
+    const fatal = document.getElementById('fatal');
+    const msg = err instanceof Error ? err.message : String(err);
+    if (fatal) {
+      fatal.hidden = false;
+      const p = document.getElementById('fatalText');
+      if (p) p.textContent = msg;
+    }
+    console.error('[pinwheel]', err);
+    return { refresh: () => {}, dispose: () => {} };
+  }
+}
+
+function main(): PinwheelHandle {
   assertContract();
+
+  // 首帧之前先读一次主题色：Canvas 拿不到 CSS 变量。
+  refreshPalette();
 
   const canvas = document.getElementById('cv') as HTMLCanvasElement;
   const stage = document.getElementById('stage')!;
@@ -114,7 +142,9 @@ function main(): void {
 
   /* ---- 主循环 ---- */
   let last = 0;
+  let disposed = false;
   const frame = (now: number): void => {
+    if (disposed) return;
     if (!last) last = now;
     const dt = (now - last) / 1000;
     last = now;
@@ -145,17 +175,15 @@ function main(): void {
 
   // 舞台尺寸由 CSS 决定，这里只保证画布跟着它走
   stage.dataset.ready = '1';
+
+  return {
+    refresh: () => {
+      refreshPalette();
+      drawNow();
+    },
+    dispose: () => {
+      disposed = true;
+    },
+  };
 }
 
-try {
-  main();
-} catch (err) {
-  const fatal = document.getElementById('fatal');
-  const msg = err instanceof Error ? err.message : String(err);
-  if (fatal) {
-    fatal.hidden = false;
-    const p = document.getElementById('fatalText');
-    if (p) p.textContent = msg;
-  }
-  console.error('[pinwheel]', err);
-}

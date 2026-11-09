@@ -94,11 +94,12 @@ const k = focal / (focal + Z);   // 透视除法：越远越小
 ## 形态
 
 ```
-index.html           DOM 契约：控件 id、读数位置、错误提示层
-src/main.ts          装配与主循环，唯一的 rAF 起点
+index.html           DOM 挂载点与首帧主题脚本
+src/app.tsx          React 外壳：DOM 契约、挂载内核、转发主题变化
+src/main.ts          装配与主循环，唯一的 rAF 起点（导出 mountPinwheel）
 src/geometry.ts      叶片的参数化（纯计算，不碰 DOM）
 src/scene.ts         三种画法：2D 变换栈 / 3D 挤出投影 / 单叶分解
-src/palette.ts       色相与渐变
+src/palette.ts       配色：从主题 token 推导四个色相与参考层颜色
 src/model.ts         状态与时间推进
 src/ui.ts            DOM 契约的读写
 src/styles.css       界面样式

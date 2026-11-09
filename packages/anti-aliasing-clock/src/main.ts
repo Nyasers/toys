@@ -20,8 +20,7 @@ import {
 } from './clock/time-model';
 import { Loupe } from './clock/loupe';
 import { DIAL } from './clock/DIAL';
-import { ThemeController } from './themes/controller';
-import './styles.css';
+import { readPalette } from '@toys/ui';
 
 /**
  * 设备像素边长的下限与天花板（README §7.1）。
@@ -68,7 +67,17 @@ function optional<T extends HTMLElement>(id: string): T | null {
 
 /* ── 启动 ───────────────────────────────────────────────── */
 
-function boot(): void {
+/** 挂载后交给外部的句柄：主题变化时同步色板，离开时停掉循环。 */
+export interface ClockHandle {
+  applyPalette: () => void;
+  dispose: () => void;
+}
+
+/**
+ * 挂载时钟。DOM 由 React 渲染（id 与 data-* 就是契约），这里只把内核接上去。
+ * 首帧之前 documentElement 上的 data-theme 已由页面内联脚本设好，所以色板能直接读到。
+ */
+export function mountClock(): ClockHandle {
   const fatal = optional<HTMLElement>('fatal');
   const fatalText = optional<HTMLElement>('fatalText');
   const report = (reason: string): void => {
@@ -81,7 +90,7 @@ function boot(): void {
     app = new App(report);
   } catch (err) {
     report(err instanceof Error ? err.message : String(err));
-    return;
+    return { applyPalette: () => {}, dispose: () => {} };
   }
 
   try {
@@ -89,6 +98,11 @@ function boot(): void {
   } catch (err) {
     report(err instanceof Error ? err.message : String(err));
   }
+
+  return {
+    applyPalette: () => app.applyPalette(),
+    dispose: () => app.dispose(),
+  };
 }
 
 /* ── 应用 ───────────────────────────────────────────────── */
@@ -116,7 +130,6 @@ class App {
   private readonly samplesGroup: HTMLElement;
   private readonly samplesValue: HTMLElement;
   private readonly samplesRange: HTMLInputElement;
-  private readonly themeSelect: HTMLSelectElement | null;
   private readonly timezoneSelect: HTMLSelectElement | null;
   private readonly analyticButtons: HTMLButtonElement[];
   private readonly linearButtons: HTMLButtonElement[];
@@ -133,7 +146,9 @@ class App {
   private readonly time = new TimeModel();
   private readonly renderer: ClockRenderer;
   private readonly loupe: Loupe;
-  private readonly theme: ThemeController;
+
+  /** 卸载后主循环立即停手，不再碰 GL。 */
+  private disposed = false;
 
   /** true = 解析覆盖；false = 超采样（n = 1 即 1 点/像素）。 */
   private analytic = false;
@@ -181,7 +196,6 @@ class App {
     this.samplesGroup = must<HTMLElement>('samplesGroup');
     this.samplesValue = must<HTMLElement>('samplesValue');
     this.samplesRange = must<HTMLInputElement>('samples');
-    this.themeSelect = optional<HTMLSelectElement>('themeSelect');
     this.timezoneSelect = optional<HTMLSelectElement>('timezoneSelect');
     this.fieldBtn = must<HTMLButtonElement>('fieldBtn');
     this.gridBtn = must<HTMLButtonElement>('gridBtn');
@@ -206,11 +220,6 @@ class App {
     const side = sideFor(this.dial, 1);
     this.renderer = new ClockRenderer(this.glCanvas, side);
     this.loupe = new Loupe(document.documentElement, this.overlayCanvas, this.loupeCanvas);
-    // 调色板由 controller.start() 在首帧之前送来。
-    this.theme = new ThemeController(
-      { setPalette: (p) => this.renderer.setPalette(p) },
-      this.themeSelect,
-    );
 
     // 初始化期的 GL 失败要立刻可见，不能等到第一帧。
     this.glCanvas.addEventListener('webglcontextlost', (ev: Event) => {
@@ -220,7 +229,8 @@ class App {
   }
 
   start(): void {
-    this.theme.start();
+    // 主题 CSS 已由页面入口装入；这里把当前主题的色板推给渲染器。
+    this.applyPalette();
     // 网格状态以这里的字段为准，不复用 Loupe 内部的默认值。
     this.loupe.setGrid(this.grid);
     this.samples = Number.parseInt(this.samplesRange.value, 10) || 1;
@@ -239,6 +249,17 @@ class App {
       new ResizeObserver(() => this.resize()).observe(this.dial);
     }
     requestAnimationFrame(this.loop);
+  }
+
+  /* ── 主题与卸载 ───────────────────────────────────────── */
+
+  /** 主题切换后重读 CSS 变量。只在切换时调用，不进渲染循环。 */
+  applyPalette(): void {
+    this.renderer.setPalette(readPalette());
+  }
+
+  dispose(): void {
+    this.disposed = true;
   }
 
   /* ── 布局 ─────────────────────────────────────────────── */
@@ -261,6 +282,7 @@ class App {
   /* ── 主循环 ───────────────────────────────────────────── */
 
   private loop = (rafTime: number): void => {
+    if (this.disposed) return;
     this.tick(rafTime);
     requestAnimationFrame(this.loop);
   };
@@ -689,5 +711,3 @@ function isTextEntry(target: EventTarget | null): boolean {
   const tag = target.tagName;
   return tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || target.isContentEditable;
 }
-
-boot();

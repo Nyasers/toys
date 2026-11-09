@@ -1,0 +1,169 @@
+/*
+ * 目录页样式。颜色全部来自 Hana 主题 token，尺寸与节奏是本页自己的。
+ */
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB',
+    'Microsoft YaHei', sans-serif;
+  font-size: 16px;
+  line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
+}
+
+main {
+  max-width: 50rem;
+  margin: 0 auto;
+  padding: clamp(2rem, 7vw, 5rem) clamp(1.5rem, 6vw, 5rem) clamp(1.5rem, 5vw, 4rem);
+}
+
+.head-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.head-tools {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: none;
+}
+
+header h1 {
+  margin: 0;
+  font-size: clamp(2.2rem, 7vw, 3rem);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+}
+
+header p {
+  margin: 0.75rem 0 0;
+  max-width: 32rem;
+  color: var(--text-light);
+  text-wrap: pretty;
+}
+
+.rule {
+  margin: clamp(1.5rem, 5vw, 3rem) 0 clamp(1rem, 3vw, 1.6rem);
+  border: 0;
+  border-top: 1px solid var(--border);
+}
+
+ul.toys {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+ul.toys li + li {
+  margin-top: 0.6rem;
+}
+
+a.toy {
+  display: grid;
+  grid-template-columns: 3.2rem 1fr auto;
+  align-items: baseline;
+  gap: 0.25rem 1rem;
+  padding: 1.15rem 1.25rem;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  color: inherit;
+  text-decoration: none;
+  transition: background-color 140ms ease, border-color 140ms ease;
+}
+
+a.toy:hover,
+a.toy:focus-visible {
+  background: var(--bg-card);
+  border-color: var(--border);
+  outline: none;
+}
+
+.no {
+  font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  letter-spacing: 0.08em;
+}
+
+.name {
+  font-size: 1.06rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.desc {
+  grid-column: 2;
+  color: var(--text-light);
+  font-size: 0.94rem;
+  text-wrap: pretty;
+}
+
+.tags {
+  grid-column: 2;
+  color: var(--text-muted);
+  font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  opacity: 0.9;
+}
+
+.go {
+  grid-row: 1 / -1;
+  grid-column: 3;
+  align-self: center;
+  color: var(--text-muted);
+  transition: transform 140ms ease, color 140ms ease;
+}
+
+a.toy:hover .go,
+a.toy:focus-visible .go {
+  color: var(--accent);
+  transform: translateX(3px);
+}
+
+footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: clamp(1.6rem, 5vw, 3rem);
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}
+
+footer a {
+  color: inherit;
+  text-decoration: none;
+  border-bottom: 1px solid var(--border);
+}
+
+footer a:hover {
+  color: var(--text);
+  border-color: currentColor;
+}
+
+@media (max-width: 34rem) {
+  a.toy {
+    grid-template-columns: 2.4rem 1fr;
+  }
+
+  .go {
+    display: none;
+  }
+}

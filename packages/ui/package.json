@@ -1,0 +1,19 @@
+{
+  "name": "@toys/ui",
+  "version": "0.0.0",
+  "private": true,
+  "description": "三个页面共用的壳：Hana 主题、导航、PWA",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./styles.css": "./src/styles.css",
+    "./vite": "./src/vite-plugin.ts"
+  },
+  "peerDependencies": {
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "vite": "^8.3.0"
+  }
+}

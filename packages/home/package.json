@@ -1,0 +1,25 @@
+{
+  "name": "@toys/home",
+  "version": "0.0.0",
+  "private": true,
+  "description": "toys 目录页：站点根上的入口",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "build:minify": "tsc --noEmit && vite build --mode minify",
+    "build:standalone": "tsc --noEmit && vite build --mode standalone",
+    "build:standalone:minify": "tsc --noEmit && vite build --mode standalone-minify",
+    "preview": "vite preview"
+  },
+  "license": "MPL-2.0",
+  "dependencies": {
+    "@toys/ui": "workspace:*",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^7.0.2",
+    "vite": "^8.3.0"
+  }
+}

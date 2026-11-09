@@ -3,9 +3,8 @@
 
 import { defineConfig } from 'vite';
 import type { Plugin } from 'vite';
+import { themeLabels } from '@toys/ui/vite';
 import { PurgeCSS } from 'purgecss';
-import { THEME_IDS, THEME_LABEL_KEYS } from './src/themes/catalog.ts';
-import upstreamLocale from './vendor/openhanako/desktop/src/locales/zh.json' with { type: 'json' };
 import { minify as minifyHtml } from 'html-minifier-terser';
 import tokenizeGlsl, { type GlslToken } from 'glsl-tokenizer/string';
 
@@ -223,39 +222,6 @@ function pruneCssOutput(): Plugin {
   };
 }
 
-/**
- * 主题显示名取自上游 locale：构建期只摘出清单里那几条，整个 locale 文件不进产物。
- *
- * 名字在 submodule 里（vendor/openhanako/desktop/src/locales/zh.json 的 settings.appearance）。
- * 上游改了 key、删了条目或搬了文件，这里直接抛错中断构建——显示名不静默回落到 id。
- */
-function upstreamThemeLabels(): Plugin {
-  const moduleId = 'virtual:aaclock-upstream-labels';
-  const resolvedId = `\0${moduleId}`;
-  const appearance = upstreamLocale.settings.appearance as Record<string, string>;
-  const labels: Record<string, string> = {};
-  const missing: string[] = [];
-  for (const id of THEME_IDS) {
-    const key: string | undefined = THEME_LABEL_KEYS[id];
-    const label: string | undefined = key === undefined ? undefined : appearance[key];
-    if (typeof label === 'string' && label.length > 0) labels[id] = label;
-    else missing.push(`${id} → appearance.${key ?? '(未登记)'}`);
-  }
-  if (missing.length > 0) {
-    throw new Error(`[aaclock] 上游 locale 里没有这些主题名：${missing.join('、')}`);
-  }
-  return {
-    name: 'aaclock:upstream-theme-labels',
-    resolveId(id) {
-      return id === moduleId ? resolvedId : null;
-    },
-    load(id) {
-      if (id !== resolvedId) return null;
-      return `export const THEME_LABELS = ${JSON.stringify(labels, null, 2)};\n`;
-    },
-  };
-}
-
 export default defineConfig(({ mode }) => {
   // mode 就是构建变体：默认（多文件、不压缩）/ minify / standalone / standalone-minify。
   // 开关只在这里声明一处，不依赖 CLI 与配置文件的优先级。
@@ -281,7 +247,7 @@ export default defineConfig(({ mode }) => {
     },
     // 插件顺序即执行顺序：转 raw 加载 → 裁 CSS → 换行转义 → 内联 → 压 HTML。
     plugins: [
-      upstreamThemeLabels(),
+      themeLabels(),
       shaderSource(),
       ...(minify ? [minifyRawShaders(), pruneCssOutput()] : []),
       escapeNewlines(),

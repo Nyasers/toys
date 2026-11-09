@@ -1,16 +1,16 @@
 /* SPDX-License-Identifier: MPL-2.0 */
 /* Copyright (c) 2026 Nyasers */
 
-/* 四叶风车 —— 界面样式。深色舞台，HUD 浮在画布之上。 */
+/* 四叶风车 —— 界面样式。HUD 浮在画布之上，配色全部来自 Hana 主题 token。 */
 
 :root {
-  --bg0: #04060d;
-  --bg1: #0e1730;
-  --ink: #e9efff;
-  --dim: #8fa2cc;
-  --line: rgba(150, 180, 255, 0.16);
-  --glass: rgba(14, 22, 44, 0.72);
-  --accent: #6fd3ff;
+  /* 本页的语义别名：Canvas 与 HUD 都从这里取色，主题一换整套跟着换。 */
+  --bg0: var(--bg);
+  --bg1: var(--bg-card);
+  --ink: var(--text);
+  --dim: var(--text-light);
+  --line: var(--border);
+  --glass: var(--bg-glass);
 }
 
 * {
@@ -119,7 +119,7 @@ canvas.grabbing {
   border-radius: 14px;
   backdrop-filter: blur(10px);
   padding: 14px 16px 12px;
-  width: 290px;
+  width: 320px;
 }
 
 #panel .grp {
@@ -146,7 +146,7 @@ input[type='range'] {
   height: 3px;
   -webkit-appearance: none;
   appearance: none;
-  background: linear-gradient(90deg, var(--accent), rgba(150, 180, 255, 0.22));
+  background: linear-gradient(90deg, var(--accent), var(--border));
   border-radius: 3px;
   outline: none;
 }
@@ -156,8 +156,8 @@ input[type='range']::-webkit-slider-thumb {
   width: 13px;
   height: 13px;
   border-radius: 50%;
-  background: #fff;
-  box-shadow: 0 0 0 3px rgba(111, 211, 255, 0.25);
+  background: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-light);
   cursor: pointer;
 }
 
@@ -166,7 +166,7 @@ input[type='range']::-moz-range-thumb {
   height: 13px;
   border: 0;
   border-radius: 50%;
-  background: #fff;
+  background: var(--accent);
   cursor: pointer;
 }
 
@@ -181,7 +181,7 @@ input[type='range']::-moz-range-thumb {
   font-size: 11.5px;
   color: var(--dim);
   letter-spacing: 0.04em;
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--accent-light);
   border: 1px solid var(--line);
   border-radius: 8px;
   padding: 5px 10px;
@@ -191,12 +191,12 @@ input[type='range']::-moz-range-thumb {
 
 .btns button:hover {
   color: var(--ink);
-  border-color: rgba(111, 211, 255, 0.45);
+  border-color: var(--accent);
 }
 
 .btns button.on {
-  color: #04121c;
-  background: var(--accent);
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 18%, transparent);
   border-color: var(--accent);
   font-weight: 600;
 }
@@ -207,7 +207,7 @@ input[type='range']::-moz-range-thumb {
   bottom: 26px;
   transform: translateX(-50%);
   font-size: 11.5px;
-  color: rgba(143, 162, 204, 0.75);
+  color: var(--dim);
   letter-spacing: 0.08em;
   pointer-events: none;
 }
@@ -247,4 +247,17 @@ body.no-ui #hint {
   margin: 0;
   color: var(--dim);
   font-size: 13px;
+}
+
+/* 标题下的链接行：返回、源码、主题选择器排成一行。 */
+#title .links {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+/* 主题名长短不一，给下拉一个下限，不然会被挤成一个小方块。 */
+#title .toys-theme-select {
+  min-width: 74px;
 }

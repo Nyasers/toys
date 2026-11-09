@@ -13,9 +13,13 @@
 
 import {
   BLADE_COUNT,
+  backdropColor,
+  bladeColors,
   bladeGradient,
   bladeStroke,
-  HUES,
+  softAccent,
+  softInk,
+  type BladeColor,
 } from './palette';
 import {
   bladeOutline,
@@ -28,9 +32,6 @@ import {
 } from './geometry';
 
 const TAU = Math.PI * 2;
-
-/** 画布底色。拖影模式用它做半透明覆盖，残影才留得下来。 */
-const BACKDROP = 'rgba(4,6,13,0.30)';
 
 /** 3D 挤出的切片数。层数越多边缘越平滑，代价是每帧排序的项数线性增长。 */
 const SLICES = 18;
@@ -126,7 +127,7 @@ export class Scene {
    */
   private backdrop(trails: boolean): void {
     if (trails) {
-      this.ctx.fillStyle = BACKDROP;
+      this.ctx.fillStyle = backdropColor();
       this.ctx.fillRect(0, 0, this.w, this.h);
     } else {
       this.ctx.clearRect(0, 0, this.w, this.h);
@@ -140,14 +141,14 @@ export class Scene {
     ctx.translate(this.cx, this.cy);
     ctx.lineWidth = 1;
 
-    ctx.strokeStyle = 'rgba(150,180,255,0.11)';
+    ctx.strokeStyle = softInk(0.11);
     for (let i = 1; i <= 4; i++) {
       ctx.beginPath();
       ctx.arc(0, 0, (this.r * i) / 4, 0, TAU);
       ctx.stroke();
     }
 
-    ctx.strokeStyle = 'rgba(150,180,255,0.07)';
+    ctx.strokeStyle = softInk(0.07);
     for (let a = 0; a < 12; a++) {
       const th = (a * TAU) / 12;
       ctx.beginPath();
@@ -182,7 +183,7 @@ export class Scene {
     }
     ctx.closePath();
     ctx.setLineDash([5, 6]);
-    ctx.strokeStyle = 'rgba(111,211,255,0.32)';
+    ctx.strokeStyle = softAccent(0.32);
     ctx.stroke();
 
     ctx.beginPath();
@@ -194,7 +195,7 @@ export class Scene {
     }
     ctx.closePath();
     ctx.setLineDash([]);
-    ctx.strokeStyle = 'rgba(255,255,255,0.22)';
+    ctx.strokeStyle = softInk(0.22);
     ctx.stroke();
     ctx.restore();
   }
@@ -206,9 +207,9 @@ export class Scene {
     ctx.translate(this.cx, this.cy);
 
     const g = ctx.createRadialGradient(0, 0, 0, 0, 0, this.r * 0.16);
-    g.addColorStop(0, 'rgba(255,255,255,0.95)');
-    g.addColorStop(0.35, 'rgba(180,225,255,0.55)');
-    g.addColorStop(1, 'rgba(120,180,255,0)');
+    g.addColorStop(0, softInk(0.95));
+    g.addColorStop(0.35, softAccent(0.55));
+    g.addColorStop(1, softAccent(0));
     ctx.fillStyle = g;
     ctx.beginPath();
     ctx.arc(0, 0, this.r * 0.16, 0, TAU);
@@ -270,17 +271,17 @@ export class Scene {
       ctx.save();
       // 变换栈：只转坐标系，outline 的顶点一个都没改
       ctx.rotate(p.angle + (i * Math.PI) / 2);
-      const hue = HUES[i]!;
+      const color = bladeColors()[i]!;
 
       this.trace(outline);
-      ctx.fillStyle = bladeGradient(ctx, this.len, hue);
-      ctx.shadowColor = `hsla(${hue + 10}, 100%, 62%, 0.55)`;
+      ctx.fillStyle = bladeGradient(ctx, this.len, color);
+      ctx.shadowColor = `hsla(${color.hue}, ${color.sat}%, ${color.light}%, 0.55)`;
       ctx.shadowBlur = 26;
       ctx.fill();
 
       ctx.shadowBlur = 0;
       ctx.lineWidth = 1.4;
-      ctx.strokeStyle = bladeStroke(hue, 0.85);
+      ctx.strokeStyle = bladeStroke(color, 0.85);
       ctx.stroke();
 
       this.spine(p.bendDeg);
@@ -303,7 +304,7 @@ export class Scene {
       ctx.lineTo(r * Math.cos(phi), r * Math.sin(phi));
     }
     ctx.lineWidth = 1;
-    ctx.strokeStyle = 'rgba(255,255,255,0.35)';
+    ctx.strokeStyle = softInk(0.35);
     ctx.stroke();
   }
 
@@ -318,7 +319,7 @@ export class Scene {
 
     const bendRad = p.bendDeg * (Math.PI / 180);
     const outline = bladeOutline(p.shape, this.len, bendRad, p.width);
-    const hue = HUES[0]!;
+    const hue = bladeColors()[0]!;
 
     ctx.save();
     ctx.translate(this.cx, this.cy);
@@ -343,13 +344,13 @@ export class Scene {
     }
     ctx.setLineDash([6, 5]);
     ctx.lineWidth = 1.3;
-    ctx.strokeStyle = 'rgba(255,255,255,0.75)';
+    ctx.strokeStyle = softInk(0.75);
     ctx.stroke();
     ctx.setLineDash([]);
 
     // 宽度剖面：每一条横线就是一个 t 处的 ±Δ(t)
     const last = outline.outer.length - 1;
-    ctx.strokeStyle = 'rgba(255,255,255,0.42)';
+    ctx.strokeStyle = softInk(0.42);
     ctx.lineWidth = 1;
     for (let k = 1; k < 10; k++) {
       const i = Math.round((k / 10) * last);
@@ -377,10 +378,10 @@ export class Scene {
     const outline = bladeOutline(p.shape, this.len, bendRad, p.width);
 
     // 四片叶子的顶点：叶基角直接烘进顶点，后续只做整体旋转
-    const blades = HUES.slice(0, BLADE_COUNT).map((hue, i) => {
+    const blades = bladeColors().slice(0, BLADE_COUNT).map((color, i) => {
       const base = (i * Math.PI) / 2;
       return {
-        hue,
+        color,
         outer: rotate(outline.outer, base),
         inner: rotate(outline.inner, base),
       };
@@ -412,7 +413,7 @@ export class Scene {
     interface Face {
       pts: Projected[];
       depth: number;
-      hue: number;
+      color: BladeColor;
       /** −1（最后）… +1（最前），用来算明暗。 */
       depthN: number;
       front: boolean;
@@ -442,7 +443,7 @@ export class Scene {
           n++;
         }
 
-        faces.push({ pts, depth: zsum / n, hue: b.hue, depthN, front: s === SLICES });
+        faces.push({ pts, depth: zsum / n, color: b.color, depthN, front: s === SLICES });
       }
     }
 
@@ -454,7 +455,8 @@ export class Scene {
     ctx.lineJoin = 'round';
     for (const f of faces) {
       const t = (f.depthN + 1) / 2; // 0 背面 … 1 正面
-      const lum = 26 + 42 * t;
+      // 背面压暗、正面提亮，幅度跟着主题色的亮度走。
+      const lum = Math.max(8, Math.min(86, f.color.light - 20 + 36 * t));
       const alpha = 0.42 + 0.56 * t;
 
       ctx.beginPath();
@@ -462,13 +464,13 @@ export class Scene {
       for (let i = 1; i < f.pts.length; i++) ctx.lineTo(f.pts[i]![0], f.pts[i]![1]);
       ctx.closePath();
 
-      ctx.fillStyle = `hsla(${f.hue + 10 * (1 - t)}, 88%, ${lum}%, ${alpha})`;
+      ctx.fillStyle = `hsla(${f.color.hue}, ${Math.max(30, f.color.sat - 6)}%, ${lum}%, ${alpha})`;
       ctx.fill();
 
       // 只在最前面一层描边：18 层各描一次会把轮廓糊成毛刺
       if (f.front) {
         ctx.lineWidth = 1.5;
-        ctx.strokeStyle = `hsla(${f.hue + 24}, 100%, 84%, 0.9)`;
+        ctx.strokeStyle = bladeStroke(f.color, 0.9);
         ctx.stroke();
       }
     }
@@ -476,8 +478,8 @@ export class Scene {
 
     const hub = project(0, 0, 0);
     const g = ctx.createRadialGradient(hub[0], hub[1], 0, hub[0], hub[1], this.r * 0.15);
-    g.addColorStop(0, 'rgba(255,255,255,0.9)');
-    g.addColorStop(1, 'rgba(140,200,255,0)');
+    g.addColorStop(0, softInk(0.9));
+    g.addColorStop(1, softAccent(0));
     ctx.fillStyle = g;
     ctx.beginPath();
     ctx.arc(hub[0], hub[1], this.r * 0.15, 0, TAU);

@@ -4,12 +4,12 @@
 /*
  * renderer.ts —— WebGL2 上下文 / 程序 / uniform / 绘制 / 读像素。
  *
- * 只负责 GL 这一侧：尺寸由 main.ts 决定，调色板由 themes/controller.ts 送来。
+ * 只负责 GL 这一侧：尺寸由 main.ts 决定，调色板由主题层送来。
  * 编译或链接失败一律抛 ShaderError，由 main.ts 显示到 #fatal，绝不静默。
  */
 
 import type { RGBA } from '../color';
-import type { GlPalette } from '../themes/controller';
+import type { Palette } from '@toys/ui';
 import VERTEX_SHADER from './fullscreen.vert';
 import FRAGMENT_SHADER from './dial.frag';
 import { DIAL } from "./DIAL";
@@ -145,7 +145,7 @@ export class ClockRenderer {
     return this.disposed || this.gl.isContextLost();
   }
 
-  setPalette(p: GlPalette): void {
+  setPalette(p: Palette): void {
     const gl = this.gl;
     if (this.lost) return;
     gl.useProgram(this.program);

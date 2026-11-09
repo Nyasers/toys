@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="description" content="一些小玩具：每个都能直接打开，也顺便讲清一件事。" />
+    <title>toys · Nyasers</title>
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <!-- 首帧之前把主题落上，避免先白一下再变色。与 ThemeProvider 的选择规则同一套。 -->
+    <script>
+      (() => {
+        const KEY = 'toys:theme';
+        const fromUrl = new URLSearchParams(location.search).get('theme');
+        let pref = fromUrl || 'auto';
+        if (!fromUrl) {
+          try {
+            pref = localStorage.getItem(KEY) || 'auto';
+          } catch {
+            /* 隐私模式下拿不到，按自动处理 */
+          }
+        }
+        const dark = matchMedia('(prefers-color-scheme: dark)').matches;
+        document.documentElement.dataset.theme =
+          pref === 'auto' ? (dark ? 'midnight' : 'warm-paper') : pref;
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/app.tsx"></script>
+  </body>
+</html>

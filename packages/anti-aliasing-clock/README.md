@@ -208,20 +208,20 @@ vec3  uBg, uCard, uEdge, uInk, uInkSoft, uMuted, uAccent, uCoral, uShadow
 
 主题定义不是本项目的数据，因此不入库：上游仓库以 submodule 挂在 `vendor/openhanako`，pin 在 `v0.450.0`（`1d3ef308`），浅克隆。
 
-- **主题 CSS** 在 `vendor/openhanako/desktop/src/themes/`，原文一字不改。`themes/index.ts` 逐个文件显式 import 清单里的 11 个配色主题，不 glob 整个目录——上游那份目录里还有本页不消费的 `new-warm-paper-fonts.css` 与字体文件。
-- **主题显示名**在 `vendor/openhanako/desktop/src/locales/zh.json` 的 `settings.appearance`。构建期由 `upstreamThemeLabels` 插件摘出清单里的那 11 条（§7.2），整个 locale 文件不进产物。
-- **清单**（主题 id 即 `[data-theme]` 取值与上游文件名，以及它对应的 locale key）写在 `themes/catalog.ts`。上游改了文件名或 key，构建直接报错，不静默回落到 id。
+- **主题 CSS** 在 `vendor/openhanako/desktop/src/themes/`，原文一字不改。`packages/ui/src/themes.ts` 逐个文件显式 import 清单里的 11 个配色主题，不 glob 整个目录——上游那份目录里还有本页不消费的 `new-warm-paper-fonts.css` 与字体文件。
+- **主题显示名**在 `vendor/openhanako/desktop/src/locales/zh.json` 的 `settings.appearance`。构建期由 `themeLabels` 插件（`packages/ui/src/vite-plugin.ts`）摘出清单里的那 11 条（§7.2），整个 locale 文件不进产物。
+- **清单**（主题 id 即 `[data-theme]` 取值与上游文件名，以及它对应的 locale key）写在 `packages/ui/src/theme-map.ts`。上游改了文件名或 key，构建直接报错，不静默回落到 id。
 
 压缩模式下会裁掉产物里页面不消费的主题变量与关键帧（§7.2）。
 
 ### 5.2 控制器
 
-`themes/controller.ts`（`ThemeController`）职责：
+`packages/ui/src/theme.tsx`（`ThemeProvider`）职责：
 
-1. **解析主题 id**，优先级从高到低：URL `?theme=<id>`（只在初次解析时认一次）> `localStorage['aaclock:theme']` > 系统明暗（`matchMedia('(prefers-color-scheme: dark)')` 命中取 `midnight`，否则 `warm-paper`，与宿主的默认搭配一致）。存储值 `auto` 表示跟随系统。无法识别的 id 忽略，继续往下回退。
+1. **解析主题 id**，优先级从高到低：URL `?theme=<id>`（只在初次解析时认一次）> `localStorage['toys:theme']` > 系统明暗（`matchMedia('(prefers-color-scheme: dark)')` 命中取 `midnight`，否则 `warm-paper`，与宿主的默认搭配一致）。存储值 `auto` 表示跟随系统。无法识别的 id 忽略，继续往下回退。
 2. **应用**：`documentElement.dataset.theme = id`（CSS 自动生效）+ `documentElement.style.colorScheme = dark ? 'dark' : 'light'`（原生控件配色）。暗色判定由底色亮度反推，省掉一张"哪些主题是暗色"的表。
 3. **读取**：`getComputedStyle(documentElement)` 取变量，转成 GL palette 交给 `renderer`。只在此处、只在应用主题时读一次，不每帧读。
-4. `themeSelect` 首项为"自动"，其余列出清单里的主题（`themes/catalog.ts`），显示名取上游 locale 的中文名（构建期摘取，§5.1）；切换即写回 `localStorage`。
+4. `ThemeSelect`（`packages/ui`）首项为"自动"，其余列出清单里的主题，显示名取上游 locale 的中文名（构建期摘取，§5.1）；切换即写回 `localStorage`。
 5. 处于 `auto` 时监听 `matchMedia` 的 change 事件重新解析（保存 MediaQueryList 引用，不在回调里新建）。
 
 页面消费的变量：`--bg --bg-card --bg-glass --accent --accent-hover --accent-light --text --text-light --text-muted --border --shadow --overlay-subtle --overlay-light --overlay-medium --overlay-strong --green --coral --danger`。
@@ -306,10 +306,9 @@ vec3  uBg, uCard, uEdge, uInk, uInkSoft, uMuted, uAccent, uCoral, uShadow
 
 ```
 src/
-  main.ts              装配：rAF 主循环、尺寸/DPR、读数、事件绑定
+  app.tsx              React 外壳：渲染 DOM 契约、挂载内核、转发主题变化
+  main.ts              装配：rAF 主循环、尺寸/DPR、读数、事件绑定（导出 mountClock）
   styles.css           页面外观，只消费主题 CSS 提供的变量
-  color.ts             颜色解析与混合（计算样式里的色值 → RGBA / 0-1 浮点）
-  themes/              上游主题清单、主题 CSS 入口、主题控制器
   clock/
     dial.frag          GLSL：SDF 图元、覆盖函数、钟面图层
     fullscreen.vert    GLSL：全屏三角形
@@ -318,6 +317,9 @@ src/
     time-model.ts      时间模型：偏移、时区、暂停、秒针量化、指针角度
     loupe.ts           放大镜：读像素 → 放大 → 像素网格 → 取样框
 ```
+
+颜色解析（`parseColor` / `flatten` / `relativeLuminance`）与主题清单已经上移到
+`packages/ui`：三个页面共用一套 token 与一套色板读取。
 
 切分的依据是**谁拥有状态**：时间归 `time-model`，颜色归 `controller`，GL 归 `renderer`，像素取样归 `loupe`，装配与交互归 `main`。模块之间只通过构造函数与少量方法耦合，不引入全局单例，也不让任何模块反向依赖 `main`。
 
@@ -348,7 +350,7 @@ src/
 
 ## 12. 来源与致谢
 
-主题 CSS 与主题显示名取自 [liliMozi/openhanako](https://github.com/liliMozi/openhanako)（HanaAgent）的主题资源，以 submodule 引用（pin 在 `v0.450.0`），版权与许可归属上游项目：本项目不复制、不改动它们的内容，只在配色与命名上跟随它。
+主题 CSS 与主题显示名取自 [liliMozi/openhanako](https://github.com/liliMozi/openhanako)（HanaAgent）的主题资源，以 submodule 引用（`vendor/openhanako`，pin 在 `v0.450.0`），版权与许可归属上游项目：本项目不复制、不改动它们的内容，只在配色与命名上跟随它。主题清单与选择器在 `packages/ui`，三页共用一套。
 
 ## 13. 许可
 

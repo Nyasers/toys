@@ -1,0 +1,66 @@
+/*
+ * 共享壳的样式：主题选择器、返回链接、安装按钮。
+ *
+ * 全部写成 :where() 包裹的选择器：优先级归零，页面自己的 select / a / button
+ * 规则可以随时盖过去。页面没有这些规则时，这里给一份能用的默认外观。
+ *
+ * 颜色一律消费 Hana 主题 token（--bg-glass / --border / --text / --text-light /
+ * --accent / --accent-light），它们定义在上游主题 CSS 里。
+ */
+
+:where(select.toys-theme-select) {
+  appearance: none;
+  font: inherit;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--text-light);
+  background-color: var(--bg-glass);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 3px 22px 3px 8px;
+  cursor: pointer;
+  background-image: var(--select-arrow);
+  background-repeat: no-repeat;
+  background-position: right 7px center;
+}
+
+:where(select.toys-theme-select:hover) {
+  color: var(--text);
+  border-color: var(--accent);
+}
+
+:where(select.toys-theme-select:focus-visible) {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+:where(a.toys-back) {
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--text-light);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  white-space: nowrap;
+  transition: color 140ms ease, border-color 140ms ease;
+}
+
+:where(a.toys-back:hover) {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+:where(button.toys-install) {
+  font: inherit;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--accent);
+  background: var(--accent-light);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 3px 10px;
+  cursor: pointer;
+}
+
+:where(button.toys-install:hover) {
+  border-color: var(--accent);
+}

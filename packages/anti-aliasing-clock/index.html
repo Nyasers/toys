@@ -1,116 +1,46 @@
 <!doctype html>
-<html lang="zh-CN" data-theme="grass-aroma">
+<html lang="zh-CN">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="color-scheme" content="light dark" />
+    <meta
+      name="description"
+      content="反走样时钟：同一套几何、两条采样路径、一个能看设备像素的放大镜。"
+    />
     <title>反走样时钟 · AAClock</title>
+    <link rel="manifest" href="../manifest.webmanifest" />
+    <!-- 首帧之前把主题落上，避免先白一下再变色。与 ThemeProvider 的选择规则同一套。 -->
+    <script>
+      (() => {
+        const KEY = 'toys:theme';
+        const fromUrl = new URLSearchParams(location.search).get('theme');
+        let pref = fromUrl || 'auto';
+        if (!fromUrl) {
+          try {
+            pref = localStorage.getItem(KEY) || 'auto';
+          } catch {
+            /* 隐私模式下拿不到，按自动处理 */
+          }
+        }
+        const dark = matchMedia('(prefers-color-scheme: dark)').matches;
+        document.documentElement.dataset.theme =
+          pref === 'auto' ? (dark ? 'midnight' : 'warm-paper') : pref;
+      })();
+    </script>
+    <!-- 启动期抛错时不要只留一个空页：把原因贴在底部。 -->
+    <script>
+      addEventListener('error', (ev) => {
+        const box = document.createElement('pre');
+        box.style.cssText =
+          'position:fixed;left:0;right:0;bottom:0;margin:0;padding:10px 14px;background:#8b3a3a;color:#fff;font:12px/1.5 ui-monospace,monospace;white-space:pre-wrap;z-index:9999';
+        box.textContent = '启动失败：' + (ev.error?.stack || ev.message);
+        document.body.appendChild(box);
+      });
+    </script>
   </head>
   <body>
-    <div class="app">
-      <header class="bar">
-        <div class="brand">
-          <h1>反走样时钟</h1>
-          <span class="tag mono">ANTI-ALIASED CLOCK</span>
-        </div>
-        <div class="readout">
-          <span class="clock mono" id="clockText">--:--:--.---</span>
-          <span class="stat mono" id="statsText"></span>
-        </div>
-      </header>
-
-      <section class="stage">
-        <div class="dial" id="dial">
-          <canvas id="glCanvas"></canvas>
-          <canvas class="overlay" id="overlayCanvas"></canvas>
-          <div class="loupe" id="loupe">
-            <canvas id="loupeCanvas" width="152" height="152"></canvas>
-            <div class="loupe-meta mono">
-              <span id="loupeHex">#000000</span>
-              <span id="loupeCoord">0,0</span>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <div class="bottom">
-        <div class="hint-row">
-          <p class="hint">
-            拖动调指针 · 滚轮调倍率 ·
-            <kbd>1</kbd>–<kbd>9</kbd> 超采样 · <kbd>0</kbd> 解析覆盖 ·
-            <kbd>B</kbd> 混合空间 · <kbd>T</kbd> 秒针运动 ·
-            <kbd>F</kbd> 覆盖场 · <kbd>V</kbd> 放大镜 · <kbd>G</kbd> 网格 · <kbd>Space</kbd> 暂停 · <kbd>R</kbd> 校准 ·
-            <kbd>H</kbd> 收起面板
-          </p>
-
-          <button type="button" class="chip console-collapse" id="collapseBtn" title="收起参数面板" aria-label="收起参数面板">
-            <svg width="10" height="6" viewBox="0 0 10 6" aria-hidden="true"><path d="M1 1l4 4 4-4" stroke="currentColor" fill="none" stroke-width="1.5" stroke-linecap="round"/></svg>
-          </button>
-        </div>
-
-        <footer class="console" id="console">
-          <div class="group">
-            <span class="label">空间采样</span>
-            <div class="seg" id="modeSeg" role="radiogroup" aria-label="空间采样">
-              <button type="button" data-analytic="0" aria-pressed="true">超采样</button>
-              <button type="button" data-analytic="1" aria-pressed="false">解析覆盖</button>
-            </div>
-          </div>
-
-          <div class="group" id="samplesGroup">
-            <span class="label">每像素样本 <b class="mono" id="samplesValue">1×1</b></span>
-            <input type="range" id="samples" min="1" max="9" step="1" value="1" aria-label="每像素采样格" />
-          </div>
-
-          <div class="group">
-            <span class="label">混合空间</span>
-            <div class="seg" id="gammaSeg" role="radiogroup" aria-label="混合空间">
-              <button type="button" data-linear="0" aria-pressed="true">sRGB</button>
-              <button type="button" data-linear="1" aria-pressed="false">线性光</button>
-            </div>
-          </div>
-
-          <div class="group">
-            <span class="label">秒针运动</span>
-            <div class="seg" id="tickSeg" role="radiogroup" aria-label="秒针运动">
-              <button type="button" data-tick="continuous" aria-pressed="true">连续</button>
-              <button type="button" data-tick="step" aria-pressed="false">跳秒</button>
-            </div>
-          </div>
-
-          <div class="group">
-            <span class="label">视图</span>
-            <div class="chips">
-              <button type="button" class="chip" id="fieldBtn" aria-pressed="false">覆盖场</button>
-              <button type="button" class="chip" id="loupeBtn" aria-pressed="false">放大镜</button>
-              <button type="button" class="chip" id="gridBtn" aria-pressed="false">网格</button>
-              <button type="button" class="chip" id="pauseBtn" aria-pressed="false">暂停</button>
-              <button type="button" class="chip" id="resetBtn" title="校准回真实时间">校准</button>
-            </div>
-          </div>
-
-          <div class="group">
-            <span class="label">时区</span>
-            <select id="timezoneSelect" aria-label="时区"></select>
-          </div>
-
-          <div class="group">
-            <span class="label">主题</span>
-            <select id="themeSelect" aria-label="主题"></select>
-          </div>
-        </footer>
-      </div>
-
-      <button type="button" class="chip expand-handle" id="expandBtn" title="展开参数面板" aria-label="展开参数面板" hidden>
-        <svg width="10" height="6" viewBox="0 0 10 6" aria-hidden="true"><path d="M1 5l4-4 4 4" stroke="currentColor" fill="none" stroke-width="1.5" stroke-linecap="round"/></svg>
-      </button>
-    </div>
-
-    <div class="fatal" id="fatal" hidden>
-      <h2>无法初始化</h2>
-      <p id="fatalText"></p>
-    </div>
-
-    <script type="module" src="/src/main.ts"></script>
+    <div id="root"></div>
+    <script type="module" src="/src/app.tsx"></script>
   </body>
 </html>

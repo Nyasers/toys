@@ -2,18 +2,16 @@
 // Copyright (c) 2026 Nyasers
 
 /*
- * catalog.ts —— 本项目消费的上游主题清单。
+ * theme-map.ts —— 主题 id 与上游 locale key 的对应表（纯数据）。
  *
- * 主题定义不是本项目的数据：CSS 与显示名都由 submodule 里的上游仓库提供
- * （vendor/openhanako，见 README §5 / §12）。本文件只声明消费哪些主题，
- * 以及每个主题 id 对应上游 locale 的哪个 key。
+ * 单独放一个文件，是为了让 vite 插件（Node 环境）也能读它：
+ * themes.ts 里带 CSS import，Node 直接 import 会失败。
  *
- * id 是 [data-theme] 的取值，也是上游主题 CSS 的文件名（去扩展名），两处由上游决定；
- * locale key 是上游 locales/zh.json 里 appearance 区块的名称。id 与 key 不是同一套命名
- * （kebab-case 对 camelCase，且个别主题的 key 与 id 并不规则对应），因此在这里一一写明。
+ * id 与 key 不是同一套命名（kebab-case 对 camelCase，且个别主题并不规则对应），
+ * 因此在这里一一写明，不做字符串推导。
  */
 
-/** 主题 id，按字典序。 */
+/** 主题 id，按字典序，也是上游主题 CSS 的文件名。 */
 export const THEME_IDS: readonly string[] = [
   'absolutely',
   'contemplation',

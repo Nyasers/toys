@@ -3,6 +3,7 @@
 
 import { defineConfig } from 'vite';
 import type { Plugin } from 'vite';
+import { themeLabels } from '@toys/ui/vite';
 import { minify as minifyHtml } from 'html-minifier-terser';
 
 /**
@@ -94,6 +95,7 @@ export default defineConfig(({ mode }) => {
     },
     // 插件顺序即执行顺序：内联 → 压 HTML。
     plugins: [
+      themeLabels(),
       ...(standalone ? [inlineStandalone()] : []),
       ...(minify ? [minifyHtmlOutput()] : []),
     ],
