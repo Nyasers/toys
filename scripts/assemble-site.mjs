@@ -121,7 +121,28 @@ self.addEventListener('fetch', (event) => {
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
 
-  // 缓存优先：产物文件名带指纹，更新靠新的 worker 换缓存。
+  // 导航请求走网络优先：发布新版本后刷新就能拿到，不用等旧缓存过期。
+  // 断网时回退到缓存里的同一页，再不行回退到站点根的目录页。
+  if (request.mode === 'navigate') {
+    event.respondWith(
+      fetch(request)
+        .then((response) => {
+          if (response.ok) {
+            const copy = response.clone();
+            caches.open(CACHE).then((cache) => cache.put(request, copy));
+          }
+          return response;
+        })
+        .catch(() =>
+          caches
+            .match(request, { ignoreSearch: true })
+            .then((hit) => hit || caches.match('/')),
+        ),
+    );
+    return;
+  }
+
+  // 其余资源缓存优先：文件名带指纹，更新靠新的 worker 换缓存。
   event.respondWith(
     caches.match(request, { ignoreSearch: true }).then((hit) => {
       if (hit) return hit;
