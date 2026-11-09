@@ -1,5 +1,6 @@
 # 站点由 Actions 构建后直接发布：main 是唯一真源，产物不进 git。
-# 单文件版落在 dist/index.html，所以上传的就是整个 dist。
+# 一个站点，按 path 分区：/aaclock/、/four-leaf-pinwheel/，根上是目录页。
+# 每个玩具仍是独立包，各自 build，产物在 _site 下互不覆盖。
 # action 钉 commit：大版本标签会动，commit 不动，行尾注释是它对应的版本。
 name: Pages
 
@@ -19,18 +20,21 @@ jobs:
       contents: read
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      # 版本取自 package.json 的 packageManager 字段，不在两处各写一遍。
+        with:
+          # aaclock 的主题 CSS 与主题显示名取自 submodule，缺了它构建不出产物。
+          submodules: recursive
+      # 版本取自根 package.json 的 packageManager 字段，不在两处各写一遍。
       - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: 26
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      # 这条脚本自带 tsc --noEmit：类型不过就不发布。
-      - run: pnpm build:standalone:minify
+      # 递归跑每个包的 build:standalone:minify（各带 tsc --noEmit），再组装 _site。
+      - run: pnpm site
       - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
         with:
-          path: dist
+          path: _site
 
   deploy:
     needs: build

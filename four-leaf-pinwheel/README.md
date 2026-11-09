@@ -6,6 +6,8 @@
 
 单页 Canvas 2D，无框架、无运行时依赖，Vite + TypeScript。
 
+> 本项目位于 [toys](../README.md) 仓库的 `four-leaf-pinwheel/` 子目录，线上地址是 <https://nyasers.github.io/toys/four-leaf-pinwheel/>。安装与构建走仓库根的 pnpm workspace，下面这些命令在仓库根执行。
+
 ![四叶风车运行画面](attachments/pinwheel-ui.png "2D 模式：四片花瓣绕轴旋转，带极坐标网格与包络星形")
 
 ## 用法
@@ -107,7 +109,7 @@ vite.config.ts       四种构建变体 + 单文件内联
 
 ## License
 
-Mozilla Public License 2.0。简单说：你可以随意使用、修改、再分发这个项目，甚至放进商业产品；但如果你改了这个项目的源文件，那些文件的修改版必须以 MPL 2.0 继续开源。你自己新写的文件不受约束。
+Mozilla Public License 2.0，全仓库共用一份，全文见 [LICENSE](../LICENSE)。简单说：你可以随意使用、修改、再分发这个项目，甚至放进商业产品；但如果你改了这个项目的源文件，那些文件的修改版必须以 MPL 2.0 继续开源。你自己新写的文件不受约束。
 
 ## 一点想法
 
