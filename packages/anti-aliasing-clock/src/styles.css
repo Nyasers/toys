@@ -565,3 +565,28 @@ select option {
   width: 82px;
   min-height: 29px;
 }
+
+/* ── 初始化失败 ─────────────────────────────────────────── */
+
+/* 失败时盖住整页：控制台留在画布空白上只是噪音。 */
+.fatal {
+  z-index: 100;
+}
+
+.fatal .fatal-help {
+  max-width: 46ch;
+  text-align: left;
+  line-height: 1.75;
+  color: var(--text-light);
+}
+
+.fatal .toys-back {
+  margin-top: 4px;
+}
+
+/* 失败时收起画布与控制台：没有画面时这些控件没有意义，只留顶栏与说明。 */
+body.is-fatal .stage,
+body.is-fatal .bottom,
+body.is-fatal .expand-handle {
+  display: none;
+}

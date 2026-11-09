@@ -83,6 +83,8 @@ export function mountClock(): ClockHandle {
   const report = (reason: string): void => {
     if (fatalText) fatalText.textContent = reason;
     if (fatal) fatal.hidden = false;
+    // 没有画面时控制台只是一堆拨不动的控件，收起来。
+    document.body.classList.add('is-fatal');
   };
 
   let app: App;
