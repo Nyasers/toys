@@ -590,3 +590,20 @@ body.is-fatal .bottom,
 body.is-fatal .expand-handle {
   display: none;
 }
+
+/* React 的挂载点在 body 与 .app 之间：把整页高度接上，否则 .app 的 height: 100% 无处可依。 */
+#root {
+  height: 100%;
+}
+
+/* 失败时的环境快照：小字、等宽、可换行，方便截图回传。 */
+.fatal .fatal-env {
+  max-width: 62ch;
+  margin-top: 2px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 1.6;
+  color: var(--text-muted);
+  text-align: left;
+  overflow-wrap: anywhere;
+}

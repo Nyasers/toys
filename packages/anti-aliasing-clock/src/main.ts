@@ -80,8 +80,11 @@ export interface ClockHandle {
 export function mountClock(): ClockHandle {
   const fatal = optional<HTMLElement>('fatal');
   const fatalText = optional<HTMLElement>('fatalText');
+  const fatalEnv = optional<HTMLElement>('fatalEnv');
+
   const report = (reason: string): void => {
     if (fatalText) fatalText.textContent = reason;
+    if (fatalEnv) fatalEnv.textContent = envSummary();
     if (fatal) fatal.hidden = false;
     // 没有画面时控制台只是一堆拨不动的控件，收起来。
     document.body.classList.add('is-fatal');
@@ -695,6 +698,22 @@ class App {
 }
 
 /* ── 工具 ───────────────────────────────────────────────── */
+
+/**
+ * 初始化失败时贴在下面的环境快照。区分“环境根本不给 WebGL”和“我们的画布出了问题”：
+ * 两条都为 false 是环境限制，都为 true 就是这边的问题。
+ */
+function envSummary(): string {
+  try {
+    const probe = (type: 'webgl' | 'webgl2'): string => {
+      const canvas = document.createElement('canvas');
+      return canvas.getContext(type) ? '✓' : '✗';
+    };
+    return `WebGL2 ${probe('webgl2')} · WebGL1 ${probe('webgl')} · ${navigator.userAgent}`;
+  } catch {
+    return '';
+  }
+}
 
 function sideFor(dial: HTMLElement, dpr: number): number {
   const css = dial.clientWidth > 0 ? dial.clientWidth : 512;

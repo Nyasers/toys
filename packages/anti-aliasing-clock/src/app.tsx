@@ -207,6 +207,7 @@ function ClockPage() {
           这个页面用 WebGL2 画钟面。打不开通常是这几种情况：浏览器或 App 内置的 WebView 不支持
           WebGL2（换 Chrome / Safari 打开一般就好）；硬件加速被关掉；省电模式把 GPU 渲染停了。
         </p>
+        <p className="fatal-env" id="fatalEnv" />
         <a className="toys-back" href="../">
           ← 返回 toys
         </a>
