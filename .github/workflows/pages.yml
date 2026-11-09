@@ -1,4 +1,4 @@
-# 站点由 Actions 构建后直接发布：main 是唯一真源，产物不进 git。
+# 站点由 Actions 构建后直接发布：master 是唯一真源，产物不进 git。
 # 一个站点，按 path 分区：/aaclock/、/four-leaf-pinwheel/，根上是目录页。
 # 每个玩具仍是独立包，各自 build，产物在 _site 下互不覆盖。
 # action 钉 commit：大版本标签会动，commit 不动，行尾注释是它对应的版本。
@@ -6,7 +6,7 @@ name: Pages
 
 on:
   push:
-    branches: [main]
+    branches: [master]
   workflow_dispatch:
 
 concurrency:

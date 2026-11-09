@@ -49,7 +49,7 @@ pnpm --filter four-leaf-pinwheel dev
 
 ## 部署
 
-推 `main` 即发布。[`.github/workflows/pages.yml`](.github/workflows/pages.yml) 负责：
+推 `master` 即发布。[`.github/workflows/pages.yml`](.github/workflows/pages.yml) 负责：
 
 1. checkout（含 submodule）→ `pnpm install --frozen-lockfile`
 2. `pnpm site`：递归构建每个子包的单文件压缩产物，再组装成 `_site/`
