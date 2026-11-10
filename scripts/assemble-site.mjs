@@ -37,6 +37,13 @@ for (const toy of TOYS) {
   console.log(`packages/${toy.dir}/dist → _site/${toy.path}`);
 }
 
+/* ── 自定义域 ───────────────────────────────────────────── */
+
+// Actions 部署会整个替换站点，根上手放的文件留不住，所以 CNAME 由这里写进产物。
+const DOMAIN = 'toys.nyase.ru';
+await writeFile(join(out, 'CNAME'), DOMAIN + '\n');
+console.log(`CNAME → ${DOMAIN}`);
+
 /* ── 文件清单 ───────────────────────────────────────────── */
 
 /** 递归列出文件，路径一律用 `/`（这是写进 sw 的字符串，不能跟着平台变）。 */
@@ -52,7 +59,10 @@ async function walk(dir) {
 }
 
 const all = await walk(out);
-const relative = all.map((file) => '/' + file.slice(out.length + 1).split('\\').join('/'));
+const relative = all
+  .map((file) => '/' + file.slice(out.length + 1).split('\\').join('/'))
+  // CNAME 不进预缓存：它只对 GitHub 有意义，页面不引用它。
+  .filter((path) => !path.endsWith('/CNAME'));
 
 const digest = createHash('sha256');
 for (const file of all.sort()) {
